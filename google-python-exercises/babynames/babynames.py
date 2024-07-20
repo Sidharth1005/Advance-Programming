@@ -38,11 +38,33 @@ def extract_names(filename):
   """
   Given a file name for baby.html, returns a list starting with the year string
   followed by the name-rank strings in alphabetical order.
-  ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
+  ['2006', 'Aaliyah 91', 'Aaron 57', 'Abagail 895', ' ...]
   """
-  # +++your code here+++
-  return
+  with open(filename, 'r') as f:
+    text = f.read()
 
+  # Extract the year
+  year_match = re.search(r'Popularity in (\d{4})', text)
+  if not year_match:
+    print(f"Couldn't find the year in {filename}")
+    sys.exit(1)
+  year = year_match.group(1)
+
+  # Extract the names and rank numbers
+  tuples = re.findall(r'<tr align="right"><td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', text)
+  names_dict = {}
+  for rank, boyname, girlname in tuples:
+    if boyname not in names_dict:
+      names_dict[boyname] = rank
+    if girlname not in names_dict:
+      names_dict[girlname] = rank
+
+  # Build the result list
+  result = [year]
+  for name in sorted(names_dict.keys()):
+    result.append(f"{name} {names_dict[name]}")
+
+  return result
 
 def main():
   # This command-line parsing code is provided.
@@ -60,9 +82,18 @@ def main():
     summary = True
     del args[0]
 
-  # +++your code here+++
   # For each filename, get the names, then either print the text output
   # or write it to a summary file
+  for filename in args:
+    names = extract_names(filename)
+
+    text = '\n'.join(names)
+
+    if summary:
+      with open(filename + '.summary', 'w') as f:
+        f.write(text + '\n')
+    else:
+      print(text)
 
 if __name__ == '__main__':
   main()
